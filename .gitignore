@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+
+# Environment variables - NEVER commit this!
+.env
+.env.local
+.env.production
+.env.*.local
+
+# Logs
+*.log
+out.log
+server_log.txt
+audit.log
+logs/
+
+# Downloads & Reports (generated files)
+downloads/
+reports/
+
+# PM2 runtime files
+.pm2/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE / Editor files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Generated PDFs (optional - remove this line if you want to track PDFs)
+*.pdf
+
+# Validation tracking (runtime generated)
+validation_tracking.json
+
+# Docker
+.dockerignore
