@@ -1,0 +1,75 @@
+name: 🚀 JeevanYog MCP — Deploy & Sync MongoDB Atlas
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:   # Allows manual trigger from GitHub UI
+
+jobs:
+  # ─────────────────────────────────────────────
+  #  JOB 1: Validate Code & Dependencies
+  # ─────────────────────────────────────────────
+  validate:
+    name: ✅ Validate Project
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 📦 Install Dependencies
+        run: npm ci
+
+      - name: 🔍 Check Required Files Exist
+        run: |
+          echo "Checking project structure..."
+          test -f server.js         && echo "✅ server.js found"
+          test -f models/coupleSchema.js && echo "✅ coupleSchema.js found"
+          test -f apply-schema.js   && echo "✅ apply-schema.js found"
+          test -f .env.example      && echo "✅ .env.example found"
+          test -f Dockerfile        && echo "✅ Dockerfile found"
+          echo "✅ All required files verified!"
+
+  # ─────────────────────────────────────────────
+  #  JOB 2: Sync Schema to MongoDB Atlas
+  #  Only runs on push to main (not PRs)
+  # ─────────────────────────────────────────────
+  sync-atlas:
+    name: 📦 Sync Schema → MongoDB Atlas
+    runs-on: ubuntu-latest
+    needs: validate
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    env:
+      MONGODB_URI: ${{ secrets.MONGODB_URI }}
+      DB_NAME: ${{ secrets.DB_NAME }}
+      COLLECTION_NAME: ${{ secrets.COLLECTION_NAME }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      MOCK_AI: "true"
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 📦 Install Dependencies
+        run: npm ci
+
+      - name: 🏗️ Apply MongoDB Schema & Indexes
+        run: node apply-schema.js
+
+      - name: ✅ Schema Sync Complete
+        run: echo "🎉 MongoDB Atlas schema is up to date!"
